@@ -288,5 +288,5 @@ else:
 ###Não foram encontrados dados com problemas na tabulação, entretanto, o preenchimento dos dados possui diversas informações
 #as quais eu não sei se são necessárias para o analista. Portanto, serão mantidas. 
 
-##IDS repetidos: 
+##IDS repetidos:
 
