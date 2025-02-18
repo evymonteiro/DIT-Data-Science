@@ -9,15 +9,21 @@ tabela_dados = 'C:\\Users\\eves\\Desktop\\DIT\\dados_ficha_a_desafio.csv'
 df = pd.read_csv(tabela_dados)
 
 ##Tamanho do banco de dados: 
-print(df.shape)    
+#print(df.shape)    
 
 ##Exibir as 15 primeiras linhas do data.frame, a intenção é visualizar como está a tabulação dos dados. 
+
 pd.set_option('display.max_columns', None)
 print(df.head(15))
 
 #Análise exploratória básica: 
 
 print(df.describe(include='all'))
+
+#Aqui é possível identificar algumas informações essenciais sobre os dados, por meio de estatísticas como quartis
+#moda, média, e o valor max e min. Dessa forma é possível já identificar se existem valores máximos que se afastam
+#muito do valor médio, indicando inconformidade nas unidades de medida adotadas, e também outras informações como repetição
+#do mesmo ID para pacientes diferentes (posteriormente é analisado se se referem ao mesmo paciente ou se são diferentes pacientes).
 
 ###Verificação da existência de lacuna / dado não preenchido:
 
@@ -31,11 +37,11 @@ print("Colunas com valores ausentes:", df.columns[df.isna().any()].tolist())
 #ou representada de outra forma. 
 
 #Análise dos tipos de dados: 
-#print(df.dtypes)
+print(df.dtypes)
 
-for c1 in df.columns:
-    tipos_dados = df[c1].apply(type).unique() 
-    print(f"{c1}: {tipos_dados}")
+#for c1 in df.columns:
+    #tipos_dados = df[c1].apply(type).unique() 
+    #print(f"{c1}: {tipos_dados}")
 
 ##Dados de peso e altura = float 
 ##Dados de contagem de atendimentos = int 
@@ -98,8 +104,9 @@ for coluna in colunas_texto:
 for coluna, palavras in palavras_coluna.items():
     print(f"Coluna: {coluna}")
     print(palavras)
-    print("-" * 150)
+    print("-" * 150)   ### separação para melhor visualização
 
+#Foram encontrados diversos erros de formatação, que serão corrigidos via modelo dbt. 
 
 # Formato de datas:
 import re
@@ -160,11 +167,12 @@ for col in ["data_nascimento", "data_cadastro", "data_atualizacao_cadastro", "up
     else:
         print(f"Coluna '{col}' possui outro formato de data.")
 
-##Datas estão padronizadas. 
+##Datas estão padronizadas, porém de acordo com o describe, existem datas de atualização de cadastro com ano de 1900
+#e updated_at também com o ano de 1900, indicando preenchimento errado. 
 
 ##Dados de contagem e mensuração: 
 
-#Para verificar a conformidade com a unidade de medida, a visualização por meio de plotagem de gráfico de dispersão
+#Para verificar a conformidade com a unidade de medida, a visualização por meio de plotagem gráfica
 #indicaria outliers e valores discrepantes entre si, sugerindo uma diferença na escala / unidade de medida. 
 
 import matplotlib.pyplot as plt
@@ -174,21 +182,111 @@ import seaborn as sns
 
 var_numeros = ["n_atendimentos_atencao_primaria", "n_atendimentos_hospital", "altura", "peso", "pressao_sistolica", "pressao_diastolica"]
 
-#for var in var_numeros:
- #   plt.figure(figsize=(8, 5))
-  #  sns.histplot(df[var], bins=30, stat="density", kde=True) 
-   # plt.title(f'Histograma de Densidade - {var}')
-   # plt.xlabel(var)
-    #plt.ylabel('Densidade')
-    #plt.grid(True)
-    #plt.show()
+for var in var_numeros:
+    plt.figure(figsize=(8, 5))
+    sns.histplot(df[var], bins=30, stat="density", kde=True) 
+    plt.title(f'Histograma de Densidade - {var}')
+    plt.xlabel(var)
+    plt.ylabel('Densidade')
+    plt.grid(True)
+    plt.show()
 
-###Os dados não apresentam discrepâncias, sugerindo uma mesma unidade de medida. 
+for var in var_numeros:
+    plt.figure(figsize=(8, 5))
+    sns.boxplot(x=df[var]) 
+    plt.title(f'Boxplot - {var}')
+    plt.xlabel(var)
+    plt.grid(True)  
+    plt.show()
 
-#Análise exploratória básica: 
+##Por meio da função describe e dos gráficos, foi identificado que as colunas peso e altura apresentam valores discrepantes.
+#Para identificar melhor quais valores apresentam problemas, vamos filtrar os dados com altura acima de 2 metros
+#e peso acima de 200kg. 
 
-print(df.describe(include='all'))
+print(df.loc[df['altura'] > 200, 'altura'].reset_index())
+print(df.loc[df['peso'] > 200, 'peso'].reset_index())
 
+#A partir do describe:
 
+##Pressão sistolica valor max 900, Q1 e Q3 = 120 e 140, indicando que esse valor de 900 pode ser dividido por 10, por exemplo.
+#Pressão diastolica max 921, Q1 e Q3 = 70 e 87, indicando que esse valor também pode ser dividido por 10. Pois houve erro de tabulação. 
 
-###ANALISAR COLUNAS DE BAIRRO E OCUPAÇÃO 
+#Altura: Foram encontradas 11 linhas com valores acima de 200cm. Enquanto o describe: Q1 = 145cm e Q3= 165cm
+#entretanto, o valor max é de 810, o que em centímetros indicaria 8m, provavelmente foi cadastrado em mm.
+
+#Peso: Q1 = 50kg e Q3 = 82kg, enquanto o max é 998. Qual unidade de medida poderia ser usada? Penso em hectogramas
+#pois evitaria casas decimais em alguns sistemas.
+#Foram encontrados 114 valores acima de 200kg. 
+
+#Colunas de bairro e ocupação:
+
+#Foram encontrados 748 valores para as colunas de bairro e 1355 para tipos de ocupação. 
+
+#Bairros: 
+#Identificação de valores únicos pros bairros apenas para visualização inicial: 
+
+print(df['bairro'].unique()[:10]) ##Aqui dá pra alterar e ver os 748 valores :)
+
+#Visualmente os bairros não aparentam erro de formatação, para garantir: 
+
+# Função para identificar valores problemáticos
+def verificar_bairro(bairro):
+    """
+    Verifica se um bairro tem caracteres problemáticos.
+
+    Verifica se o bairro tem caracteres numéricos ou caracteres especiais
+    fora do padrão de acentos e espaços.
+
+    Parameters
+    ----------
+    bairro : str
+        Bairro a ser verificado.
+
+    Returns
+    -------
+    bool
+        True se o bairro tem caracteres problemáticos, False caso contrário.
+    """
+    if pd.isna(bairro): 
+        return False
+    return bool(re.search(r'\d|[^a-zA-ZÀ-ÿ\s\-()]|[äöüÿèìòùîûýşţřňů]', bairro))
+
+# Filtro
+
+bairros = df.loc[df['bairro'].apply(verificar_bairro), 'bairro'].unique()
+
+if bairros.size > 0:
+    print(bairros)
+else:
+    print("Nenhum bairro encontrado")
+
+#Não apresentou nenhum tipo de caractere problemático, apenas uso de () e []. Permitindo a presença de () uma vez que
+#estes especificam algumas funções. 
+
+#Ocupação 
+
+print(df['ocupacao'].unique()[:10]) 
+
+#Visualmente os bairros não aparentam erro de formatação, para garantir: 
+
+# Função para identificar valores problemáticos
+def verificar_bairro(ocupacao):
+   
+    if pd.isna(ocupacao): 
+        return False
+    return bool(re.search(r'\d|[^a-zA-ZÀ-ÿ\s\-()]|[äöüÿèìòùîûýşţřňů]', ocupacao))
+
+# Filtro
+
+ocupacao1 = df.loc[df['ocupacao'].apply(verificar_bairro), 'ocupacao'].unique()
+
+if ocupacao1.size > 0:
+    print(ocupacao1)
+else:
+    print("Nenhuma ocupação encontrada")
+
+###Não foram encontrados dados com problemas na tabulação, entretanto, o preenchimento dos dados possui diversas informações
+#as quais eu não sei se são necessárias para o analista. Portanto, serão mantidas. 
+
+##IDS repetidos: 
+
