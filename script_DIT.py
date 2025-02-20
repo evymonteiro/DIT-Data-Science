@@ -106,7 +106,8 @@ for coluna, palavras in palavras_coluna.items():
     print(palavras)
     print("-" * 150)   ### separação para melhor visualização
 
-#Foram encontrados diversos erros de formatação, que serão corrigidos via modelo dbt. 
+#Foram encontrados diversos erros de formatação, que serão corrigidos via modelo dbt. Além disso, erros de preenchimento/coleta
+#como palavras que não fazem sentido dentro do contexto.
 
 # Formato de datas:
 import re
