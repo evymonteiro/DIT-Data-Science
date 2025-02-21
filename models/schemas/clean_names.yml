@@ -1,0 +1,14 @@
+version: 2
+
+models:
+  - name: clean_names
+    description: "Modelo que limpa os nomes dos meios de transporte, doenças, comunicação e tratamento."
+    columns:
+      - name: meios_transporte
+        description: "Nome limpo do meio de transporte."
+      - name: doencas_condicoes
+        description: "Nome limpo da condição ou doença."
+      - name: meios_comunicacao
+        description: "Nome limpo do meio de comunicação."
+      - name: em_caso_doenca_procura
+        description: "Nome limpo de qual lugar procura em caso de doença."

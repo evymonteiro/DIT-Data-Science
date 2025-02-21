@@ -1,0 +1,8 @@
+version: 2
+
+sources:
+  - name: data-science-dit
+    database: data-science-dit
+    schema: dataset
+    tables:
+      - name: dataset

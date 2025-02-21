@@ -1,0 +1,13 @@
+version: 2
+
+models:
+  - name: booleans_columns
+    description: "Altera os valores de False para 0 e de True para 1 utilizando uma macro"
+    columns:
+      - name: obito
+      - name: luz_eletrica
+      - name: em_situacao_de_rua
+      - name: possui_plano_de_saude
+      - name: vulnerabilidade_social
+      - name: familia_beneficiaria_auxilio_brasil
+      - name: crianca_matriculada_creche_pre_escola

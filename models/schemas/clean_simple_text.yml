@@ -1,0 +1,20 @@
+version: 2
+
+models:
+  - name: clean_simple_text
+    description: "Limpa textos mais simples e padroniza coluna de orientação sexual por meio de outra macro."
+    columns:
+      - name: id_paciente
+        description: "ID único do paciente"
+      - name: raca_cor
+        description: "Coluna com a raça ou cor do paciente"
+      - name: bairro
+        description: "Bairro onde o paciente reside"
+      - name: religiao
+        description: "Religião do paciente"
+      - name: escolaridade
+        description: "Nível de escolaridade do paciente"
+      - name: nacionalidade
+        description: "Nacionalidade do paciente"
+      - name: orientacao_sexual
+        description: "Orientação sexual do paciente"
