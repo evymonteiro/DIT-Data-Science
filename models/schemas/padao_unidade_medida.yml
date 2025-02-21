@@ -1,0 +1,16 @@
+version: 2
+
+models:
+  - name: padrao_unidade_medida
+    description: "Modelo para transformação de dados com ajustes de unidades para pressão, altura e peso."
+    columns:
+      - name: id_paciente
+        description: "ID único do paciente"
+      - name: pressao_sistolica_cm
+        description: "Pressão Sistólica ajustada para mmHg. Valores maiores que 250 são divididos por 10."
+      - name: pressao_diastolica_cm
+        description: "Pressão Diastólica ajustada para mmHg. Valores maiores que 150 são divididos por 10."
+      - name: altura_cm
+        description: "Altura ajustada para cm. Valores maiores que 300 cm são divididos por 100."
+      - name: peso_kg
+        description: "Peso ajustado para kg. Valores maiores que 250 hectogramas são divididos por 100 para conversão para kg."
